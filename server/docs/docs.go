@@ -15,9 +15,63 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/usergroup-ms/v1/items": {
+        "/usergroup-ms/v1/admin/usergroups": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "List user groups",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "user group id",
+                        "name": "usergroup_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.UserGroupListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Create an item record.",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,17 +79,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Item"
+                    "admin"
                 ],
-                "summary": "Item Create",
+                "summary": "Create user group",
                 "parameters": [
                     {
-                        "description": "Item information",
-                        "name": "user",
+                        "description": "create payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/data.ItemVO"
+                            "$ref": "#/definitions/data.CreateUserGroupRequest"
                         }
                     }
                 ],
@@ -51,7 +105,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/data.ItemVO"
+                                            "$ref": "#/definitions/data.UserGroupVO"
                                         }
                                     }
                                 }
@@ -61,23 +115,33 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/data.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/data.BaseResponse"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                    }
+                }
+            }
+        },
+        "/usergroup-ms/v1/admin/usergroups/{user_group_id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get user group",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user group id",
+                        "name": "user_group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -87,7 +151,103 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "string"
+                                            "$ref": "#/definitions/data.UserGroupVO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Update user group",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user group id",
+                        "name": "user_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "update payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/data.UpdateUserGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.UserGroupVO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/usergroup-ms/v1/admin/usergroups/{user_group_id}/count": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Estimate user group size",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user group id",
+                        "name": "user_group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.UserGroupCountVO"
                                         }
                                     }
                                 }
@@ -97,25 +257,82 @@ const docTemplate = `{
                 }
             }
         },
-        "/usergroup-ms/v1/items/{item_id}": {
-            "get": {
-                "description": "Get item information by item ID.",
-                "tags": [
-                    "Item"
+        "/usergroup-ms/v1/admin/usergroups/{user_group_id}/offline": {
+            "post": {
+                "produces": [
+                    "application/json"
                 ],
-                "summary": "Item Query with ID",
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Offline user group",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Item.ID",
-                        "name": "item_id",
+                        "description": "user group id",
+                        "name": "user_group_id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.UserGroupStatusVO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/usergroup-ms/v1/admin/usergroups/{user_group_id}/publish": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Publish user group",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user group id",
+                        "name": "user_group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.UserGroupStatusVO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -134,16 +351,156 @@ const docTemplate = `{
                 }
             }
         },
-        "data.ItemVO": {
+        "data.Condition": {
             "type": "object",
             "required": [
-                "name"
+                "field",
+                "operator",
+                "value"
             ],
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "data.CreateUserGroupRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "ruleConfig"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "ruleConfig": {
+                    "$ref": "#/definitions/data.RuleConfig"
+                }
+            }
+        },
+        "data.RuleConfig": {
+            "type": "object",
+            "required": [
+                "conditions",
+                "logic"
+            ],
+            "properties": {
+                "conditions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/data.Condition"
+                    }
+                },
+                "logic": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.UpdateUserGroupRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "ruleConfig"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "ruleConfig": {
+                    "$ref": "#/definitions/data.RuleConfig"
+                }
+            }
+        },
+        "data.UserGroupCountVO": {
+            "type": "object",
+            "properties": {
+                "computedAt": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "userGroupId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "data.UserGroupListItemVO": {
+            "type": "object",
             "properties": {
                 "id": {
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.UserGroupListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.UserGroupListItemVO"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "data.UserGroupStatusVO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.UserGroupVO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ruleConfig": {
+                    "$ref": "#/definitions/data.RuleConfig"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }

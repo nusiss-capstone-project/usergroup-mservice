@@ -4,8 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/nusiss-capstone-project/usergroup-mservice/server/repository/model"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -21,21 +20,15 @@ type TxBeginner interface {
 var _ TxBeginner = (*gorm.DB)(nil) // Compile-time interface check
 
 func Init() {
-	dsn := os.Getenv("MYSQL_DSN")
+	dsn := os.Getenv("POSTGRES_DSN")
 	if dsn == "" {
-		panic("MYSQL_DSN environment variable is not set")
+		panic("POSTGRES_DSN environment variable is not set")
 	}
-	DB, err = gorm.Open(mysql.Open(dsn),
+	DB, err = gorm.Open(postgres.Open(dsn),
 		&gorm.Config{
 			PrepareStmt:            true,
 			SkipDefaultTransaction: true,
 		},
-	)
-	if err != nil {
-		panic(err)
-	}
-	err = DB.AutoMigrate(
-		&model.Item{},
 	)
 	if err != nil {
 		panic(err)

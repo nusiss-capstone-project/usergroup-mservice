@@ -1,0 +1,19 @@
+{"level":"INFO","ts":"2026-08-06T14:32:55.960+0800","caller":"cmd/user_info_sync.go:18","msg":"usergroup user_info_sync job starting","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:37:44.033+0800","caller":"cmd/user_info_sync.go:18","msg":"usergroup user_info_sync job starting","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:37:44.034+0800","caller":"service/sync.go:50","msg":"user info sync started","service":"usergroup-job","env":"local","batch_size":500}
+{"level":"INFO","ts":"2026-08-06T14:37:45.572+0800","caller":"postgres/user_full_info_dao.go:95","msg":"user_full_info batch upserted","service":"usergroup-job","env":"local","count":6}
+{"level":"INFO","ts":"2026-08-06T14:37:45.572+0800","caller":"service/sync.go:107","msg":"user info sync batch done","service":"usergroup-job","env":"local","batch":1,"after_id":10005,"batch_count":6,"processed":6}
+{"level":"INFO","ts":"2026-08-06T14:37:45.572+0800","caller":"service/sync.go:120","msg":"user info sync finished","service":"usergroup-job","env":"local","batches":1,"processed":6,"success":6,"failed":0}
+{"level":"INFO","ts":"2026-08-06T14:37:45.572+0800","caller":"cmd/user_info_sync.go:23","msg":"usergroup user_info_sync job completed","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:40:54.310+0800","caller":"cmd/user_info_sync.go:18","msg":"usergroup user_info_sync job starting","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:40:54.311+0800","caller":"service/sync.go:50","msg":"user info sync started","service":"usergroup-job","env":"local","batch_size":500}
+{"level":"INFO","ts":"2026-08-06T14:42:51.641+0800","caller":"postgres/user_full_info_dao.go:95","msg":"user_full_info batch upserted","service":"usergroup-job","env":"local","count":6}
+{"level":"INFO","ts":"2026-08-06T14:42:53.361+0800","caller":"service/sync.go:107","msg":"user info sync batch done","service":"usergroup-job","env":"local","batch":1,"after_id":10005,"batch_count":6,"processed":6}
+{"level":"INFO","ts":"2026-08-06T14:42:53.361+0800","caller":"service/sync.go:120","msg":"user info sync finished","service":"usergroup-job","env":"local","batches":1,"processed":6,"success":6,"failed":0}
+{"level":"INFO","ts":"2026-08-06T14:42:53.361+0800","caller":"cmd/user_info_sync.go:23","msg":"usergroup user_info_sync job completed","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:47:02.272+0800","caller":"cmd/user_info_sync.go:18","msg":"usergroup user_info_sync job starting","service":"usergroup-job","env":"local"}
+{"level":"INFO","ts":"2026-08-06T14:47:02.273+0800","caller":"service/sync.go:50","msg":"user info sync started","service":"usergroup-job","env":"local","batch_size":500}
+{"level":"INFO","ts":"2026-08-06T14:47:13.537+0800","caller":"postgres/user_full_info_dao.go:97","msg":"user_full_info batch upserted","service":"usergroup-job","env":"local","count":6,"rows_affected":6,"first_user_id":1,"last_user_id":10005}
+{"level":"INFO","ts":"2026-08-06T14:47:13.537+0800","caller":"service/sync.go:107","msg":"user info sync batch done","service":"usergroup-job","env":"local","batch":1,"after_id":10005,"batch_count":6,"processed":6}
+{"level":"INFO","ts":"2026-08-06T14:47:13.537+0800","caller":"service/sync.go:120","msg":"user info sync finished","service":"usergroup-job","env":"local","batches":1,"processed":6,"success":6,"failed":0}
+{"level":"INFO","ts":"2026-08-06T14:47:13.537+0800","caller":"cmd/user_info_sync.go:23","msg":"usergroup user_info_sync job completed","service":"usergroup-job","env":"local"}

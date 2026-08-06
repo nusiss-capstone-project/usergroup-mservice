@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UsergroupService_SayHello_FullMethodName = "/usergrouppb.UsergroupService/SayHello"
+	UsergroupService_MatchUserGroup_FullMethodName = "/usergrouppb.UsergroupService/MatchUserGroup"
 )
 
 // UsergroupServiceClient is the client API for UsergroupService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsergroupServiceClient interface {
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
+	MatchUserGroup(ctx context.Context, in *MatchUserGroupRequest, opts ...grpc.CallOption) (*MatchUserGroupResponse, error)
 }
 
 type usergroupServiceClient struct {
@@ -37,10 +37,10 @@ func NewUsergroupServiceClient(cc grpc.ClientConnInterface) UsergroupServiceClie
 	return &usergroupServiceClient{cc}
 }
 
-func (c *usergroupServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+func (c *usergroupServiceClient) MatchUserGroup(ctx context.Context, in *MatchUserGroupRequest, opts ...grpc.CallOption) (*MatchUserGroupResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(HelloResponse)
-	err := c.cc.Invoke(ctx, UsergroupService_SayHello_FullMethodName, in, out, cOpts...)
+	out := new(MatchUserGroupResponse)
+	err := c.cc.Invoke(ctx, UsergroupService_MatchUserGroup_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *usergroupServiceClient) SayHello(ctx context.Context, in *HelloRequest,
 // All implementations must embed UnimplementedUsergroupServiceServer
 // for forward compatibility.
 type UsergroupServiceServer interface {
-	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
+	MatchUserGroup(context.Context, *MatchUserGroupRequest) (*MatchUserGroupResponse, error)
 	mustEmbedUnimplementedUsergroupServiceServer()
 }
 
@@ -62,8 +62,8 @@ type UsergroupServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUsergroupServiceServer struct{}
 
-func (UnimplementedUsergroupServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedUsergroupServiceServer) MatchUserGroup(context.Context, *MatchUserGroupRequest) (*MatchUserGroupResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MatchUserGroup not implemented")
 }
 func (UnimplementedUsergroupServiceServer) mustEmbedUnimplementedUsergroupServiceServer() {}
 func (UnimplementedUsergroupServiceServer) testEmbeddedByValue()                          {}
@@ -86,20 +86,20 @@ func RegisterUsergroupServiceServer(s grpc.ServiceRegistrar, srv UsergroupServic
 	s.RegisterService(&UsergroupService_ServiceDesc, srv)
 }
 
-func _UsergroupService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+func _UsergroupService_MatchUserGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MatchUserGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UsergroupServiceServer).SayHello(ctx, in)
+		return srv.(UsergroupServiceServer).MatchUserGroup(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UsergroupService_SayHello_FullMethodName,
+		FullMethod: UsergroupService_MatchUserGroup_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsergroupServiceServer).SayHello(ctx, req.(*HelloRequest))
+		return srv.(UsergroupServiceServer).MatchUserGroup(ctx, req.(*MatchUserGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +112,8 @@ var UsergroupService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UsergroupServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _UsergroupService_SayHello_Handler,
+			MethodName: "MatchUserGroup",
+			Handler:    _UsergroupService_MatchUserGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

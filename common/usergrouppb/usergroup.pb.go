@@ -21,72 +21,87 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type HelloRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
+type ErrorCode int32
 
-func (x *HelloRequest) Reset() {
-	*x = HelloRequest{}
-	mi := &file_proto_usergroup_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
+const (
+	ErrorCode_ERROR_UNSPECIFIED     ErrorCode = 0
+	ErrorCode_OK                    ErrorCode = 1
+	ErrorCode_INVALID_PARAM         ErrorCode = 2
+	ErrorCode_DATA_NOT_EXIST        ErrorCode = 3
+	ErrorCode_USER_GROUP_NOT_ACTIVE ErrorCode = 4
+	ErrorCode_UNKNOWN_ERROR         ErrorCode = 100
+)
 
-func (x *HelloRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*HelloRequest) ProtoMessage() {}
-
-func (x *HelloRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_usergroup_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+// Enum value maps for ErrorCode.
+var (
+	ErrorCode_name = map[int32]string{
+		0:   "ERROR_UNSPECIFIED",
+		1:   "OK",
+		2:   "INVALID_PARAM",
+		3:   "DATA_NOT_EXIST",
+		4:   "USER_GROUP_NOT_ACTIVE",
+		100: "UNKNOWN_ERROR",
 	}
-	return mi.MessageOf(x)
+	ErrorCode_value = map[string]int32{
+		"ERROR_UNSPECIFIED":     0,
+		"OK":                    1,
+		"INVALID_PARAM":         2,
+		"DATA_NOT_EXIST":        3,
+		"USER_GROUP_NOT_ACTIVE": 4,
+		"UNKNOWN_ERROR":         100,
+	}
+)
+
+func (x ErrorCode) Enum() *ErrorCode {
+	p := new(ErrorCode)
+	*p = x
+	return p
 }
 
-// Deprecated: Use HelloRequest.ProtoReflect.Descriptor instead.
-func (*HelloRequest) Descriptor() ([]byte, []int) {
+func (x ErrorCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ErrorCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_usergroup_proto_enumTypes[0].Descriptor()
+}
+
+func (ErrorCode) Type() protoreflect.EnumType {
+	return &file_proto_usergroup_proto_enumTypes[0]
+}
+
+func (x ErrorCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ErrorCode.Descriptor instead.
+func (ErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_proto_usergroup_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *HelloRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type HelloResponse struct {
+type BaseResponseInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=usergrouppb.ErrorCode" json:"code,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HelloResponse) Reset() {
-	*x = HelloResponse{}
-	mi := &file_proto_usergroup_proto_msgTypes[1]
+func (x *BaseResponseInfo) Reset() {
+	*x = BaseResponseInfo{}
+	mi := &file_proto_usergroup_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HelloResponse) String() string {
+func (x *BaseResponseInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HelloResponse) ProtoMessage() {}
+func (*BaseResponseInfo) ProtoMessage() {}
 
-func (x *HelloResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_usergroup_proto_msgTypes[1]
+func (x *BaseResponseInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_usergroup_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -97,29 +112,152 @@ func (x *HelloResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HelloResponse.ProtoReflect.Descriptor instead.
-func (*HelloResponse) Descriptor() ([]byte, []int) {
-	return file_proto_usergroup_proto_rawDescGZIP(), []int{1}
+// Deprecated: Use BaseResponseInfo.ProtoReflect.Descriptor instead.
+func (*BaseResponseInfo) Descriptor() ([]byte, []int) {
+	return file_proto_usergroup_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *HelloResponse) GetMessage() string {
+func (x *BaseResponseInfo) GetCode() ErrorCode {
+	if x != nil {
+		return x.Code
+	}
+	return ErrorCode_ERROR_UNSPECIFIED
+}
+
+func (x *BaseResponseInfo) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
 	return ""
 }
 
+type MatchUserGroupRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserGroupId   int64                  `protobuf:"varint,2,opt,name=user_group_id,json=userGroupId,proto3" json:"user_group_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MatchUserGroupRequest) Reset() {
+	*x = MatchUserGroupRequest{}
+	mi := &file_proto_usergroup_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MatchUserGroupRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MatchUserGroupRequest) ProtoMessage() {}
+
+func (x *MatchUserGroupRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_usergroup_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MatchUserGroupRequest.ProtoReflect.Descriptor instead.
+func (*MatchUserGroupRequest) Descriptor() ([]byte, []int) {
+	return file_proto_usergroup_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *MatchUserGroupRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *MatchUserGroupRequest) GetUserGroupId() int64 {
+	if x != nil {
+		return x.UserGroupId
+	}
+	return 0
+}
+
+type MatchUserGroupResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Matched          bool                   `protobuf:"varint,1,opt,name=matched,proto3" json:"matched,omitempty"`
+	BaseResponseInfo *BaseResponseInfo      `protobuf:"bytes,255,opt,name=base_response_info,json=baseResponseInfo,proto3" json:"base_response_info,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *MatchUserGroupResponse) Reset() {
+	*x = MatchUserGroupResponse{}
+	mi := &file_proto_usergroup_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MatchUserGroupResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MatchUserGroupResponse) ProtoMessage() {}
+
+func (x *MatchUserGroupResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_usergroup_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MatchUserGroupResponse.ProtoReflect.Descriptor instead.
+func (*MatchUserGroupResponse) Descriptor() ([]byte, []int) {
+	return file_proto_usergroup_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MatchUserGroupResponse) GetMatched() bool {
+	if x != nil {
+		return x.Matched
+	}
+	return false
+}
+
+func (x *MatchUserGroupResponse) GetBaseResponseInfo() *BaseResponseInfo {
+	if x != nil {
+		return x.BaseResponseInfo
+	}
+	return nil
+}
+
 var File_proto_usergroup_proto protoreflect.FileDescriptor
 
 const file_proto_usergroup_proto_rawDesc = "" +
 	"\n" +
-	"\x15proto/usergroup.proto\x12\vusergrouppb\"\"\n" +
-	"\fHelloRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
-	"\rHelloResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2U\n" +
-	"\x10UsergroupService\x12A\n" +
-	"\bSayHello\x12\x19.usergrouppb.HelloRequest\x1a\x1a.usergrouppb.HelloResponseB\x1aZ\x18/usergrouppb;usergrouppbb\x06proto3"
+	"\x15proto/usergroup.proto\x12\vusergrouppb\"X\n" +
+	"\x10BaseResponseInfo\x12*\n" +
+	"\x04code\x18\x01 \x01(\x0e2\x16.usergrouppb.ErrorCodeR\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"T\n" +
+	"\x15MatchUserGroupRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\"\n" +
+	"\ruser_group_id\x18\x02 \x01(\x03R\vuserGroupId\"\x80\x01\n" +
+	"\x16MatchUserGroupResponse\x12\x18\n" +
+	"\amatched\x18\x01 \x01(\bR\amatched\x12L\n" +
+	"\x12base_response_info\x18\xff\x01 \x01(\v2\x1d.usergrouppb.BaseResponseInfoR\x10baseResponseInfo*\x7f\n" +
+	"\tErrorCode\x12\x15\n" +
+	"\x11ERROR_UNSPECIFIED\x10\x00\x12\x06\n" +
+	"\x02OK\x10\x01\x12\x11\n" +
+	"\rINVALID_PARAM\x10\x02\x12\x12\n" +
+	"\x0eDATA_NOT_EXIST\x10\x03\x12\x19\n" +
+	"\x15USER_GROUP_NOT_ACTIVE\x10\x04\x12\x11\n" +
+	"\rUNKNOWN_ERROR\x10d2m\n" +
+	"\x10UsergroupService\x12Y\n" +
+	"\x0eMatchUserGroup\x12\".usergrouppb.MatchUserGroupRequest\x1a#.usergrouppb.MatchUserGroupResponseB\x1aZ\x18/usergrouppb;usergrouppbb\x06proto3"
 
 var (
 	file_proto_usergroup_proto_rawDescOnce sync.Once
@@ -133,19 +271,24 @@ func file_proto_usergroup_proto_rawDescGZIP() []byte {
 	return file_proto_usergroup_proto_rawDescData
 }
 
-var file_proto_usergroup_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_usergroup_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_usergroup_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_usergroup_proto_goTypes = []any{
-	(*HelloRequest)(nil),  // 0: usergrouppb.HelloRequest
-	(*HelloResponse)(nil), // 1: usergrouppb.HelloResponse
+	(ErrorCode)(0),                 // 0: usergrouppb.ErrorCode
+	(*BaseResponseInfo)(nil),       // 1: usergrouppb.BaseResponseInfo
+	(*MatchUserGroupRequest)(nil),  // 2: usergrouppb.MatchUserGroupRequest
+	(*MatchUserGroupResponse)(nil), // 3: usergrouppb.MatchUserGroupResponse
 }
 var file_proto_usergroup_proto_depIdxs = []int32{
-	0, // 0: usergrouppb.UsergroupService.SayHello:input_type -> usergrouppb.HelloRequest
-	1, // 1: usergrouppb.UsergroupService.SayHello:output_type -> usergrouppb.HelloResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: usergrouppb.BaseResponseInfo.code:type_name -> usergrouppb.ErrorCode
+	1, // 1: usergrouppb.MatchUserGroupResponse.base_response_info:type_name -> usergrouppb.BaseResponseInfo
+	2, // 2: usergrouppb.UsergroupService.MatchUserGroup:input_type -> usergrouppb.MatchUserGroupRequest
+	3, // 3: usergrouppb.UsergroupService.MatchUserGroup:output_type -> usergrouppb.MatchUserGroupResponse
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_usergroup_proto_init() }
@@ -158,13 +301,14 @@ func file_proto_usergroup_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_usergroup_proto_rawDesc), len(file_proto_usergroup_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_usergroup_proto_goTypes,
 		DependencyIndexes: file_proto_usergroup_proto_depIdxs,
+		EnumInfos:         file_proto_usergroup_proto_enumTypes,
 		MessageInfos:      file_proto_usergroup_proto_msgTypes,
 	}.Build()
 	File_proto_usergroup_proto = out.File
