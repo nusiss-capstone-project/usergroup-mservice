@@ -5,16 +5,16 @@ package usergrouppb;
 option go_package = "/usergrouppb;usergrouppb";
 
 service UsergroupService {
-  rpc SayHello (HelloRequest) returns (HelloResponse);
   rpc MatchUserGroup (MatchUserGroupRequest) returns (MatchUserGroupResponse);
 }
 
-message HelloRequest {
-  string name = 1;
-}
-
-message HelloResponse {
-  string message = 1;
+enum ErrorCode {
+  ERROR_UNSPECIFIED = 0;
+  OK = 1;
+  INVALID_PARAM = 2;
+  DATA_NOT_EXIST = 3;
+  USER_GROUP_NOT_ACTIVE = 4;
+  UNKNOWN_ERROR = 100;
 }
 
 message BaseResponseInfo {
@@ -28,7 +28,6 @@ message MatchUserGroupRequest {
 }
 
 message MatchUserGroupResponse {
-
   bool matched = 1;
   BaseResponseInfo base_response_info = 255;
 }
