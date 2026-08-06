@@ -7,30 +7,130 @@ definitions:
       err_msg:
         type: string
     type: object
-  data.ItemVO:
+  data.Condition:
+    properties:
+      field:
+        type: string
+      operator:
+        type: string
+      value: {}
+    required:
+    - field
+    - operator
+    - value
+    type: object
+  data.CreateUserGroupRequest:
+    properties:
+      name:
+        type: string
+      ruleConfig:
+        $ref: '#/definitions/data.RuleConfig'
+    required:
+    - name
+    - ruleConfig
+    type: object
+  data.RuleConfig:
+    properties:
+      conditions:
+        items:
+          $ref: '#/definitions/data.Condition'
+        minItems: 1
+        type: array
+      logic:
+        type: string
+    required:
+    - conditions
+    - logic
+    type: object
+  data.UpdateUserGroupRequest:
+    properties:
+      name:
+        type: string
+      ruleConfig:
+        $ref: '#/definitions/data.RuleConfig'
+    required:
+    - name
+    - ruleConfig
+    type: object
+  data.UserGroupCountVO:
+    properties:
+      computedAt:
+        type: string
+      count:
+        type: integer
+      status:
+        type: string
+      userGroupId:
+        type: integer
+    type: object
+  data.UserGroupListItemVO:
     properties:
       id:
         type: integer
       name:
         type: string
-    required:
-    - name
+      status:
+        type: string
+    type: object
+  data.UserGroupListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/data.UserGroupListItemVO'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  data.UserGroupStatusVO:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  data.UserGroupVO:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      ruleConfig:
+        $ref: '#/definitions/data.RuleConfig'
+      status:
+        type: string
+      updatedAt:
+        type: string
     type: object
 info:
   contact: {}
 paths:
-  /usergroup-ms/v1/items:
-    post:
-      consumes:
-      - application/json
-      description: Create an item record.
+  /usergroup-ms/v1/admin/usergroups:
+    get:
       parameters:
-      - description: Item information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/data.ItemVO'
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: status
+        in: query
+        name: status
+        type: string
+      - description: user group id
+        in: query
+        name: usergroup_id
+        type: integer
       produces:
       - application/json
       responses:
@@ -41,42 +141,164 @@ paths:
             - $ref: '#/definitions/data.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/data.ItemVO'
+                  $ref: '#/definitions/data.UserGroupListResponse'
+              type: object
+      summary: List user groups
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: create payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/data.CreateUserGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.UserGroupVO'
               type: object
         "400":
           description: Bad Request
           schema:
-            allOf:
-            - $ref: '#/definitions/data.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "500":
-          description: Internal Server Error
+            $ref: '#/definitions/data.BaseResponse'
+      summary: Create user group
+      tags:
+      - admin
+  /usergroup-ms/v1/admin/usergroups/{user_group_id}:
+    get:
+      parameters:
+      - description: user group id
+        in: path
+        name: user_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/data.BaseResponse'
             - properties:
                 data:
-                  type: string
+                  $ref: '#/definitions/data.UserGroupVO'
               type: object
-      summary: Item Create
+      summary: Get user group
       tags:
-      - Item
-  /usergroup-ms/v1/items/{item_id}:
-    get:
-      description: Get item information by item ID.
+      - admin
+    put:
+      consumes:
+      - application/json
       parameters:
-      - description: Item.ID
+      - description: user group id
         in: path
-        name: item_id
+        name: user_group_id
         required: true
         type: integer
+      - description: update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/data.UpdateUserGroupRequest'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-      summary: Item Query with ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.UserGroupVO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.BaseResponse'
+      summary: Update user group
       tags:
-      - Item
+      - admin
+  /usergroup-ms/v1/admin/usergroups/{user_group_id}/count:
+    get:
+      parameters:
+      - description: user group id
+        in: path
+        name: user_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.UserGroupCountVO'
+              type: object
+      summary: Estimate user group size
+      tags:
+      - admin
+  /usergroup-ms/v1/admin/usergroups/{user_group_id}/offline:
+    post:
+      parameters:
+      - description: user group id
+        in: path
+        name: user_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.UserGroupStatusVO'
+              type: object
+      summary: Offline user group
+      tags:
+      - admin
+  /usergroup-ms/v1/admin/usergroups/{user_group_id}/publish:
+    post:
+      parameters:
+      - description: user group id
+        in: path
+        name: user_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.UserGroupStatusVO'
+              type: object
+      summary: Publish user group
+      tags:
+      - admin
 swagger: "2.0"
