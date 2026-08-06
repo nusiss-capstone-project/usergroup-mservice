@@ -28,8 +28,7 @@ func NewRouter() *gin.Engine {
 	r.Use(log.HTTPObservabilityMiddleware())
 	r.Use(corsMiddleware())
 
-	// Default: open to campaign_ops and admin via identity-mservice headers.
-	auth := commonauth.RequireRole([]string{
+	adminAuth := commonauth.RequireRole([]string{
 		commonauth.RoleCampaignOps, commonauth.RoleAdmin,
 	})
 
@@ -44,8 +43,18 @@ func NewRouter() *gin.Engine {
 				"message": "pong",
 			})
 		})
-		basicGroup.POST("/items", auth, api.CreateItem)
-		basicGroup.GET("/items/:item_id", auth, api.GetItems)
+
+		adminGroup := basicGroup.Group("/admin")
+		adminGroup.Use(adminAuth)
+		{
+			adminGroup.POST("/usergroups", api.CreateUserGroup)
+			adminGroup.GET("/usergroups", api.ListUserGroups)
+			adminGroup.GET("/usergroups/:user_group_id", api.GetUserGroup)
+			adminGroup.PUT("/usergroups/:user_group_id", api.UpdateUserGroup)
+			adminGroup.POST("/usergroups/:user_group_id/publish", api.PublishUserGroup)
+			adminGroup.POST("/usergroups/:user_group_id/offline", api.OfflineUserGroup)
+			adminGroup.GET("/usergroups/:user_group_id/count", api.EstimateUserGroupSize)
+		}
 	}
 	return r
 }

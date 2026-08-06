@@ -57,7 +57,7 @@ jobs:
       - name: Login to Alibaba Cloud ACR
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
-          registry: ${{ secrets.ACR_REGISTRY }}
+          registry: ${{ vars.ACR_REGISTRY }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
@@ -68,7 +68,7 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: |
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_REPOSITORY }}:${{ steps.version.outputs.tag }}
+            ${{ vars.ACR_REGISTRY }}/${{ vars.ACR_REPOSITORY }}:${{ steps.version.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -84,7 +84,7 @@ jobs:
           echo "### Build Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Git tag**: \`${{ steps.version.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Image**: \`${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_REPOSITORY }}:${{ steps.version.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Image**: \`${{ vars.ACR_REGISTRY }}/${{ vars.ACR_REPOSITORY }}:${{ steps.version.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **GitOps branch**: \`${{ steps.version.outputs.gitops_branch }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Commit**: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
 
@@ -104,7 +104,7 @@ jobs:
         working-directory: gitops
         run: |
           TAG="${{ needs.build.outputs.tag }}"
-          VALUES_FILE="apps/payment-mservice/values.yaml"
+          VALUES_FILE="apps/usergroup-mservice/values.yaml"
           sed -i "s/^  tag: .*/  tag: ${TAG}/" "${VALUES_FILE}"
           echo "Updated ${VALUES_FILE}:"
           grep -A2 '^image:' "${VALUES_FILE}"
@@ -114,12 +114,12 @@ jobs:
         run: |
           git config user.name "${GIT_USER_NAME:-github-actions[bot]}"
           git config user.email "${GIT_USER_EMAIL:-41898282+github-actions[bot]@users.noreply.github.com}"
-          git add apps/payment-mservice/values.yaml
+          git add apps/usergroup-mservice/values.yaml
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "chore(payment-mservice): bump image tag to ${{ needs.build.outputs.tag }}"
+          git commit -m "chore(usergroup-mservice): bump image tag to ${{ needs.build.outputs.tag }}"
           git push origin "${{ needs.build.outputs.gitops_branch }}"
 
       - name: Deploy summary
@@ -128,4 +128,4 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Branch**: \`${{ needs.build.outputs.gitops_branch }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Image tag**: \`${{ needs.build.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **File**: \`apps/payment-mservice/values.yaml\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **File**: \`apps/usergroup-mservice/values.yaml\`" >> "$GITHUB_STEP_SUMMARY"

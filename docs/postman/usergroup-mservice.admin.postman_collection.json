@@ -1,0 +1,312 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-usergroup-admin01",
+    "name": "usergroup-mservice Admin APIs",
+    "description": "Local test collection for usergroup-mservice admin endpoints.\n\nAuth: identity headers `X-Internal-User-Id` + `X-User-Role` (`admin` or `campaign_ops`).\n\nSuggested flow: Ping → Create → List → Get → Update → Count → Publish → Count → Offline.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080"
+    },
+    {
+      "key": "internalUserId",
+      "value": "1"
+    },
+    {
+      "key": "userRole",
+      "value": "campaign_ops"
+    },
+    {
+      "key": "userGroupId",
+      "value": "1"
+    }
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usergroup-ms/v1/ping",
+            "description": "Health check (no auth)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - User Groups",
+      "item": [
+        {
+          "name": "Create User Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('has data.id', function () {",
+                  "  pm.expect(body).to.have.property('data');",
+                  "  pm.expect(body.data).to.have.property('id');",
+                  "});",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('userGroupId', String(body.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"VIP Verified Depositors\",\n  \"ruleConfig\": {\n    \"logic\": \"AND\",\n    \"conditions\": [\n      {\n        \"field\": \"kycStatus\",\n        \"operator\": \"EQ\",\n        \"value\": \"VERIFIED\"\n      },\n      {\n        \"field\": \"totalFiatDepositUSD\",\n        \"operator\": \"GTE\",\n        \"value\": 100\n      },\n      {\n        \"field\": \"isRiskUser\",\n        \"operator\": \"EQ\",\n        \"value\": false\n      }\n    ]\n  }\n}"
+            },
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups",
+            "description": "Create DRAFT user group. Saves `userGroupId` from response."
+          },
+          "response": []
+        },
+        {
+          "name": "List User Groups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups?page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["usergroup-ms", "v1", "admin", "usergroups"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "DRAFT",
+                  "disabled": true
+                },
+                {
+                  "key": "usergroup_id",
+                  "value": "{{userGroupId}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List with optional filters: status, usergroup_id."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Group",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups/{{userGroupId}}",
+            "description": "Get user group detail including expression."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Group",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"VIP Verified Depositors (v2)\",\n  \"ruleConfig\": {\n    \"logic\": \"AND\",\n    \"conditions\": [\n      {\n        \"field\": \"kycStatus\",\n        \"operator\": \"EQ\",\n        \"value\": \"VERIFIED\"\n      },\n      {\n        \"field\": \"totalFiatDepositUSD\",\n        \"operator\": \"GTE\",\n        \"value\": 200\n      }\n    ]\n  }\n}"
+            },
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups/{{userGroupId}}",
+            "description": "Update DRAFT only. Recalculates expression."
+          },
+          "response": []
+        },
+        {
+          "name": "Estimate User Group Size",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups/{{userGroupId}}/count",
+            "description": "Count matched users via profile @@ expression (any status)."
+          },
+          "response": []
+        },
+        {
+          "name": "Publish User Group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups/{{userGroupId}}/publish",
+            "description": "DRAFT → ACTIVE."
+          },
+          "response": []
+        },
+        {
+          "name": "Offline User Group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "{{userRole}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups/{{userGroupId}}/offline",
+            "description": "ACTIVE → OFFLINE."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User Group (admin role)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "admin"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"OR Market Sample\",\n  \"ruleConfig\": {\n    \"logic\": \"OR\",\n    \"conditions\": [\n      {\n        \"field\": \"market\",\n        \"operator\": \"EQ\",\n        \"value\": \"SG\"\n      },\n      {\n        \"field\": \"market\",\n        \"operator\": \"EQ\",\n        \"value\": \"HK\"\n      }\n    ]\n  }\n}"
+            },
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups",
+            "description": "Same create API with role=admin."
+          },
+          "response": []
+        },
+        {
+          "name": "Unauthorized (missing headers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups",
+            "description": "Expect 401 without identity headers."
+          },
+          "response": []
+        },
+        {
+          "name": "Forbidden (user role)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Internal-User-Id",
+                "value": "{{internalUserId}}"
+              },
+              {
+                "key": "X-User-Role",
+                "value": "user"
+              }
+            ],
+            "url": "{{baseUrl}}/usergroup-ms/v1/admin/usergroups",
+            "description": "Expect 403 for role=user."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

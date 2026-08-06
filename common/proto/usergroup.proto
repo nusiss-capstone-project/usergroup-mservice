@@ -6,6 +6,7 @@ option go_package = "/usergrouppb;usergrouppb";
 
 service UsergroupService {
   rpc SayHello (HelloRequest) returns (HelloResponse);
+  rpc MatchUserGroup (MatchUserGroupRequest) returns (MatchUserGroupResponse);
 }
 
 message HelloRequest {
@@ -14,4 +15,20 @@ message HelloRequest {
 
 message HelloResponse {
   string message = 1;
+}
+
+message BaseResponseInfo {
+  ErrorCode code = 1;
+  string message = 2;
+}
+
+message MatchUserGroupRequest {
+  int64 user_id = 1;
+  int64 user_group_id = 2;
+}
+
+message MatchUserGroupResponse {
+
+  bool matched = 1;
+  BaseResponseInfo base_response_info = 255;
 }
