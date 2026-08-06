@@ -7,12 +7,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/config"
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/grpc"
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/http"
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/log"
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/repository"
-	"github.com/__TEMPLATE_ORG__/__TEMPLATE_REPO__/server/telemetry"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/config"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/grpc"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/http"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/log"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/repository"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/telemetry"
 )
 
 var (
