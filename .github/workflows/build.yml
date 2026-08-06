@@ -28,7 +28,7 @@ jobs:
       - name: Build and test modules
         run: |
           set -e
-          for module in common client server; do
+          for module in common client server job; do
             echo ""
             echo "=============================="
             echo " Module: $module"
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [common, client, server]
+        module: [common, client, server, job]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go

@@ -278,6 +278,7 @@ func (s *UserGroupServiceImpl) EstimateSize(ctx context.Context, id int64) (*dat
 
 func (s *UserGroupServiceImpl) MatchUserGroup(ctx context.Context, userID, userGroupID int64) (bool, error) {
 	if userID <= 0 || userGroupID <= 0 {
+		log.WithContext(ctx).Warnw("match user group invalid param", "user_id", userID, "user_group_id", userGroupID)
 		return false, ErrInvalidParam
 	}
 	group, err := s.userGroupDao.GetByID(ctx, userGroupID)
@@ -286,12 +287,15 @@ func (s *UserGroupServiceImpl) MatchUserGroup(ctx context.Context, userID, userG
 		return false, err
 	}
 	if group == nil {
+		log.WithContext(ctx).Warnw("match user group user group not found", "user_group_id", userGroupID)
 		return false, ErrUserGroupNotFound
 	}
 	if group.Status != model.UserGroupStatusActive {
+		log.WithContext(ctx).Warnw("match user group user group not active", "user_group_id", userGroupID)
 		return false, ErrUserGroupNotActive
 	}
 	if strings.TrimSpace(group.Expression) == "" {
+		log.WithContext(ctx).Warnw("match user group expression empty", "user_group_id", userGroupID)
 		return false, ErrEmptyExpression
 	}
 	matched, err := s.userFullInfoDao.ExistsByUserAndExpression(ctx, userID, group.Expression)

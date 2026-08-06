@@ -1,0 +1,6 @@
+log:
+  level: debug
+  file_path: ./logs/usergroup-job.log
+
+sync:
+  batch_size: 500
