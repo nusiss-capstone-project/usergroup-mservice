@@ -20,7 +20,9 @@ import (
 
 var (
 	ErrInvalidRuleConfig       = errors.New("invalid ruleConfig")
+	ErrInvalidParam            = errors.New("invalid param")
 	ErrUserGroupNotFound       = errors.New("user group not found")
+	ErrUserGroupNotActive      = errors.New("user group is not active")
 	ErrInvalidStatusTransition = errors.New("invalid status transition")
 	ErrUpdateNotAllowed        = errors.New("only DRAFT user groups can be updated")
 	ErrEmptyExpression         = errors.New("user group expression is empty")
@@ -34,6 +36,7 @@ type UserGroupService interface {
 	Publish(ctx context.Context, id int64) (*data.UserGroupStatusVO, error)
 	Offline(ctx context.Context, id int64) (*data.UserGroupStatusVO, error)
 	EstimateSize(ctx context.Context, id int64) (*data.UserGroupCountVO, error)
+	MatchUserGroup(ctx context.Context, userID, userGroupID int64) (bool, error)
 }
 
 type UserGroupServiceImpl struct {
@@ -271,6 +274,43 @@ func (s *UserGroupServiceImpl) EstimateSize(ctx context.Context, id int64) (*dat
 		Count:       count,
 		ComputedAt:  time.Now().UTC(),
 	}, nil
+}
+
+func (s *UserGroupServiceImpl) MatchUserGroup(ctx context.Context, userID, userGroupID int64) (bool, error) {
+	if userID <= 0 || userGroupID <= 0 {
+		return false, ErrInvalidParam
+	}
+	group, err := s.userGroupDao.GetByID(ctx, userGroupID)
+	if err != nil {
+		log.WithContext(ctx).Errorw("match user group get failed", "error", err, "user_group_id", userGroupID)
+		return false, err
+	}
+	if group == nil {
+		return false, ErrUserGroupNotFound
+	}
+	if group.Status != model.UserGroupStatusActive {
+		return false, ErrUserGroupNotActive
+	}
+	if strings.TrimSpace(group.Expression) == "" {
+		return false, ErrEmptyExpression
+	}
+	matched, err := s.userFullInfoDao.ExistsByUserAndExpression(ctx, userID, group.Expression)
+	if err != nil {
+		log.WithContext(ctx).Errorw(
+			"match user group expression failed",
+			"error", err,
+			"user_id", userID,
+			"user_group_id", userGroupID,
+		)
+		return false, err
+	}
+	log.WithContext(ctx).Infow(
+		"match user group completed",
+		"user_id", userID,
+		"user_group_id", userGroupID,
+		"matched", matched,
+	)
+	return matched, nil
 }
 
 func toUserGroupVO(group *model.UserGroup) (*data.UserGroupVO, error) {

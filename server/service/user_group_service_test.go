@@ -510,3 +510,93 @@ func TestUserGroupService_moreBranches(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
+func TestUserGroupService_MatchUserGroup(t *testing.T) {
+	initEnv()
+	ugDao := new(mocks.UserGroupDao)
+	infoDao := new(mocks.UserFullInfoDao)
+	svc := newUserGroupService(ugDao, infoDao)
+	rule := sampleRule()
+	expr := `$.kycStatus == "VERIFIED" && $.totalFiatDepositUSD >= 100 && $.isRiskUser == false`
+
+	t.Run("invalid param", func(t *testing.T) {
+		matched, err := svc.MatchUserGroup(context.Background(), 0, 1)
+		require.ErrorIs(t, err, ErrInvalidParam)
+		assert.False(t, matched)
+
+		matched, err = svc.MatchUserGroup(context.Background(), 1, -1)
+		require.ErrorIs(t, err, ErrInvalidParam)
+		assert.False(t, matched)
+	})
+
+	t.Run("group not found", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(99)).Return(nil, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 99)
+		require.ErrorIs(t, err, ErrUserGroupNotFound)
+		assert.False(t, matched)
+	})
+
+	t.Run("group not active", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(1)).Return(&model.UserGroup{
+			ID: 1, Status: model.UserGroupStatusDraft, Expression: expr, RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 1)
+		require.ErrorIs(t, err, ErrUserGroupNotActive)
+		assert.False(t, matched)
+	})
+
+	t.Run("offline not active", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(2)).Return(&model.UserGroup{
+			ID: 2, Status: model.UserGroupStatusOffline, Expression: expr, RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 2)
+		require.ErrorIs(t, err, ErrUserGroupNotActive)
+		assert.False(t, matched)
+	})
+
+	t.Run("empty expression", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(3)).Return(&model.UserGroup{
+			ID: 3, Status: model.UserGroupStatusActive, Expression: "  ", RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 3)
+		require.ErrorIs(t, err, ErrEmptyExpression)
+		assert.False(t, matched)
+	})
+
+	t.Run("matched true", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(4)).Return(&model.UserGroup{
+			ID: 4, Status: model.UserGroupStatusActive, Expression: expr, RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		infoDao.On("ExistsByUserAndExpression", mock.Anything, int64(1001), expr).Return(true, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 4)
+		require.NoError(t, err)
+		assert.True(t, matched)
+	})
+
+	t.Run("matched false when profile missing or not match", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(5)).Return(&model.UserGroup{
+			ID: 5, Status: model.UserGroupStatusActive, Expression: expr, RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		infoDao.On("ExistsByUserAndExpression", mock.Anything, int64(1003), expr).Return(false, nil).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1003, 5)
+		require.NoError(t, err)
+		assert.False(t, matched)
+	})
+
+	t.Run("dao get error", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(6)).Return(nil, errors.New("db")).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 6)
+		require.Error(t, err)
+		assert.False(t, matched)
+	})
+
+	t.Run("exists dao error", func(t *testing.T) {
+		ugDao.On("GetByID", mock.Anything, int64(7)).Return(&model.UserGroup{
+			ID: 7, Status: model.UserGroupStatusActive, Expression: expr, RuleConfig: mustRuleJSON(t, rule),
+		}, nil).Once()
+		infoDao.On("ExistsByUserAndExpression", mock.Anything, int64(1001), expr).Return(false, errors.New("db")).Once()
+		matched, err := svc.MatchUserGroup(context.Background(), 1001, 7)
+		require.Error(t, err)
+		assert.False(t, matched)
+	})
+}

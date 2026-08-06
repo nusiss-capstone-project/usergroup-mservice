@@ -41,6 +41,34 @@ func (_m *UserFullInfoDao) CountByExpression(ctx context.Context, expression str
 	return r0, r1
 }
 
+// ExistsByUserAndExpression provides a mock function with given fields: ctx, userID, expression
+func (_m *UserFullInfoDao) ExistsByUserAndExpression(ctx context.Context, userID int64, expression string) (bool, error) {
+	ret := _m.Called(ctx, userID, expression)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ExistsByUserAndExpression")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) (bool, error)); ok {
+		return rf(ctx, userID, expression)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) bool); ok {
+		r0 = rf(ctx, userID, expression)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string) error); ok {
+		r1 = rf(ctx, userID, expression)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewUserFullInfoDao creates a new instance of UserFullInfoDao. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewUserFullInfoDao(t interface {
