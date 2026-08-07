@@ -5,6 +5,5 @@ logs/
 .vscode/
 **/*_test.go
 **/mocks/
-docs/
 *.md
 __debug_bin*
