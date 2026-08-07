@@ -68,19 +68,26 @@ func newUserGroupService(userGroupDao dao.UserGroupDao, userFullInfoDao dao.User
 
 func (s *UserGroupServiceImpl) Create(ctx context.Context, req *data.CreateUserGroupRequest) (*data.UserGroupVO, error) {
 	if req == nil {
-		return nil, fmt.Errorf("%w: request is nil", ErrInvalidRuleConfig)
+		err := fmt.Errorf("%w: request is nil", ErrInvalidRuleConfig)
+		log.WithContext(ctx).Warnw("create user group rejected", "error", err)
+		return nil, err
 	}
 	name := strings.TrimSpace(req.Name)
 	if name == "" {
-		return nil, fmt.Errorf("%w: name is required", ErrInvalidRuleConfig)
+		err := fmt.Errorf("%w: name is required", ErrInvalidRuleConfig)
+		log.WithContext(ctx).Warnw("create user group rejected", "error", err)
+		return nil, err
 	}
 	expression, err := BuildJSONPathExpression(req.RuleConfig)
 	if err != nil {
+		log.WithContext(ctx).Warnw("create user group rejected", "error", err, "name", name)
 		return nil, err
 	}
 	ruleBytes, err := json.Marshal(req.RuleConfig)
 	if err != nil {
-		return nil, fmt.Errorf("%w: marshal ruleConfig: %v", ErrInvalidRuleConfig, err)
+		err = fmt.Errorf("%w: marshal ruleConfig: %v", ErrInvalidRuleConfig, err)
+		log.WithContext(ctx).Warnw("create user group rejected", "error", err, "name", name)
+		return nil, err
 	}
 	group := &model.UserGroup{
 		Name:       name,
@@ -100,38 +107,50 @@ func (s *UserGroupServiceImpl) Create(ctx context.Context, req *data.CreateUserG
 
 func (s *UserGroupServiceImpl) Update(ctx context.Context, id int64, req *data.UpdateUserGroupRequest) (*data.UserGroupVO, error) {
 	if id <= 0 {
+		log.WithContext(ctx).Warnw("update user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	if req == nil {
-		return nil, fmt.Errorf("%w: request is nil", ErrInvalidRuleConfig)
+		err := fmt.Errorf("%w: request is nil", ErrInvalidRuleConfig)
+		log.WithContext(ctx).Warnw("update user group rejected", "error", err, "id", id)
+		return nil, err
 	}
 	existing, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("update user group get failed", "error", err, "id", id)
 		return nil, err
 	}
 	if existing == nil {
+		log.WithContext(ctx).Warnw("update user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	if existing.Status != model.UserGroupStatusDraft {
+		log.WithContext(ctx).Warnw("update user group not allowed", "id", id, "status", existing.Status)
 		return nil, ErrUpdateNotAllowed
 	}
 	name := strings.TrimSpace(req.Name)
 	if name == "" {
-		return nil, fmt.Errorf("%w: name is required", ErrInvalidRuleConfig)
+		err := fmt.Errorf("%w: name is required", ErrInvalidRuleConfig)
+		log.WithContext(ctx).Warnw("update user group rejected", "error", err, "id", id)
+		return nil, err
 	}
 	expression, err := BuildJSONPathExpression(req.RuleConfig)
 	if err != nil {
+		log.WithContext(ctx).Warnw("update user group rejected", "error", err, "id", id)
 		return nil, err
 	}
 	ruleBytes, err := json.Marshal(req.RuleConfig)
 	if err != nil {
-		return nil, fmt.Errorf("%w: marshal ruleConfig: %v", ErrInvalidRuleConfig, err)
+		err = fmt.Errorf("%w: marshal ruleConfig: %v", ErrInvalidRuleConfig, err)
+		log.WithContext(ctx).Warnw("update user group rejected", "error", err, "id", id)
+		return nil, err
 	}
 	existing.Name = name
 	existing.RuleConfig = datatypes.JSON(ruleBytes)
 	existing.Expression = expression
 	if err := s.userGroupDao.Update(ctx, existing); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.WithContext(ctx).Warnw("update user group not found", "id", id)
 			return nil, ErrUserGroupNotFound
 		}
 		log.WithContext(ctx).Errorw("update user group failed", "error", err, "id", id)
@@ -139,9 +158,11 @@ func (s *UserGroupServiceImpl) Update(ctx context.Context, id int64, req *data.U
 	}
 	updated, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("update user group reload failed", "error", err, "id", id)
 		return nil, err
 	}
 	if updated == nil {
+		log.WithContext(ctx).Warnw("update user group not found after write", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	log.WithContext(ctx).Infow("user group updated", "id", id)
@@ -150,13 +171,16 @@ func (s *UserGroupServiceImpl) Update(ctx context.Context, id int64, req *data.U
 
 func (s *UserGroupServiceImpl) Get(ctx context.Context, id int64) (*data.UserGroupVO, error) {
 	if id <= 0 {
+		log.WithContext(ctx).Warnw("get user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	group, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("get user group failed", "error", err, "id", id)
 		return nil, err
 	}
 	if group == nil {
+		log.WithContext(ctx).Warnw("get user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	return toUserGroupVO(group)
@@ -174,7 +198,9 @@ func (s *UserGroupServiceImpl) List(ctx context.Context, page, pageSize int, sta
 	}
 	status = strings.TrimSpace(status)
 	if status != "" && !isValidStatus(status) {
-		return nil, fmt.Errorf("%w: invalid status %q", ErrInvalidRuleConfig, status)
+		err := fmt.Errorf("%w: invalid status %q", ErrInvalidRuleConfig, status)
+		log.WithContext(ctx).Warnw("list user group rejected", "error", err)
+		return nil, err
 	}
 	filter := dao.UserGroupListFilter{
 		Status:      status,
@@ -182,11 +208,13 @@ func (s *UserGroupServiceImpl) List(ctx context.Context, page, pageSize int, sta
 	}
 	total, err := s.userGroupDao.Count(ctx, filter)
 	if err != nil {
+		log.WithContext(ctx).Errorw("list user group count failed", "error", err)
 		return nil, err
 	}
 	offset := (page - 1) * pageSize
 	groups, err := s.userGroupDao.List(ctx, filter, offset, pageSize)
 	if err != nil {
+		log.WithContext(ctx).Errorw("list user group failed", "error", err)
 		return nil, err
 	}
 	items := make([]*data.UserGroupListItemVO, 0, len(groups))
@@ -204,19 +232,25 @@ func (s *UserGroupServiceImpl) List(ctx context.Context, page, pageSize int, sta
 func (s *UserGroupServiceImpl) Publish(ctx context.Context, id int64) (*data.UserGroupStatusVO, error) {
 	group, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("publish user group get failed", "error", err, "id", id)
 		return nil, err
 	}
 	if group == nil {
+		log.WithContext(ctx).Warnw("publish user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	if group.Status != model.UserGroupStatusDraft {
-		return nil, fmt.Errorf("%w: publish requires DRAFT, got %s", ErrInvalidStatusTransition, group.Status)
+		err := fmt.Errorf("%w: publish requires DRAFT, got %s", ErrInvalidStatusTransition, group.Status)
+		log.WithContext(ctx).Warnw("publish user group rejected", "error", err, "id", id, "status", group.Status)
+		return nil, err
 	}
 	updated, err := s.userGroupDao.UpdateStatus(ctx, id, model.UserGroupStatusActive)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.WithContext(ctx).Warnw("publish user group not found", "id", id)
 			return nil, ErrUserGroupNotFound
 		}
+		log.WithContext(ctx).Errorw("publish user group failed", "error", err, "id", id)
 		return nil, err
 	}
 	log.WithContext(ctx).Infow("user group published", "id", id)
@@ -230,19 +264,25 @@ func (s *UserGroupServiceImpl) Publish(ctx context.Context, id int64) (*data.Use
 func (s *UserGroupServiceImpl) Offline(ctx context.Context, id int64) (*data.UserGroupStatusVO, error) {
 	group, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("offline user group get failed", "error", err, "id", id)
 		return nil, err
 	}
 	if group == nil {
+		log.WithContext(ctx).Warnw("offline user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	if group.Status != model.UserGroupStatusActive {
-		return nil, fmt.Errorf("%w: offline requires ACTIVE, got %s", ErrInvalidStatusTransition, group.Status)
+		err := fmt.Errorf("%w: offline requires ACTIVE, got %s", ErrInvalidStatusTransition, group.Status)
+		log.WithContext(ctx).Warnw("offline user group rejected", "error", err, "id", id, "status", group.Status)
+		return nil, err
 	}
 	updated, err := s.userGroupDao.UpdateStatus(ctx, id, model.UserGroupStatusOffline)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.WithContext(ctx).Warnw("offline user group not found", "id", id)
 			return nil, ErrUserGroupNotFound
 		}
+		log.WithContext(ctx).Errorw("offline user group failed", "error", err, "id", id)
 		return nil, err
 	}
 	log.WithContext(ctx).Infow("user group offline", "id", id)
@@ -256,16 +296,20 @@ func (s *UserGroupServiceImpl) Offline(ctx context.Context, id int64) (*data.Use
 func (s *UserGroupServiceImpl) EstimateSize(ctx context.Context, id int64) (*data.UserGroupCountVO, error) {
 	group, err := s.userGroupDao.GetByID(ctx, id)
 	if err != nil {
+		log.WithContext(ctx).Errorw("estimate user group get failed", "error", err, "id", id)
 		return nil, err
 	}
 	if group == nil {
+		log.WithContext(ctx).Warnw("estimate user group not found", "id", id)
 		return nil, ErrUserGroupNotFound
 	}
 	if strings.TrimSpace(group.Expression) == "" {
+		log.WithContext(ctx).Warnw("estimate user group expression empty", "id", id)
 		return nil, ErrEmptyExpression
 	}
 	count, err := s.userFullInfoDao.CountByExpression(ctx, group.Expression)
 	if err != nil {
+		log.WithContext(ctx).Errorw("estimate user group count failed", "error", err, "id", id)
 		return nil, err
 	}
 	return &data.UserGroupCountVO{

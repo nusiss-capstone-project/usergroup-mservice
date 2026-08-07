@@ -57,7 +57,7 @@ func (d *UserSourceDaoImpl) ListUsersAfterID(ctx context.Context, afterID int64,
 		Limit(limit).
 		Find(&users)
 	if ret.Error != nil {
-		log.Logger.Errorw("failed to list identity users batch", "error", ret.Error, "after_id", afterID, "limit", limit)
+		log.WithContext(ctx).Errorw("failed to list identity users batch", "error", ret.Error, "after_id", afterID, "limit", limit)
 		return nil, ret.Error
 	}
 	return users, nil

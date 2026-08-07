@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nusiss-capstone-project/usergroup-mservice/server/http/data"
+	"github.com/nusiss-capstone-project/usergroup-mservice/server/log"
 	"github.com/nusiss-capstone-project/usergroup-mservice/server/service"
 )
 
@@ -23,7 +24,7 @@ import (
 func CreateUserGroup(c *gin.Context) {
 	var req data.CreateUserGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: err.Error()})
+		writeBadRequest(c, "invalid create user group body", err)
 		return
 	}
 	vo, err := service.GetUserGroupService().Create(c.Request.Context(), &req)
@@ -52,7 +53,7 @@ func UpdateUserGroup(c *gin.Context) {
 	}
 	var req data.UpdateUserGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: err.Error()})
+		writeBadRequest(c, "invalid update user group body", err)
 		return
 	}
 	vo, err := service.GetUserGroupService().Update(c.Request.Context(), id, &req)
@@ -82,7 +83,7 @@ func ListUserGroups(c *gin.Context) {
 	if raw := c.Query("usergroup_id"); raw != "" {
 		parsed, err := strconv.ParseInt(raw, 10, 64)
 		if err != nil || parsed <= 0 {
-			c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: "invalid usergroup_id"})
+			writeBadRequest(c, "invalid usergroup_id", err)
 			return
 		}
 		userGroupID = parsed
@@ -183,10 +184,26 @@ func parseUserGroupID(c *gin.Context) (int64, bool) {
 	raw := c.Param("user_group_id")
 	id, err := strconv.ParseInt(raw, 10, 64)
 	if err != nil || id <= 0 {
-		c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: "invalid user_group_id"})
+		writeBadRequest(c, "invalid user_group_id", err)
 		return 0, false
 	}
 	return id, true
+}
+
+func writeBadRequest(c *gin.Context, msg string, err error) {
+	fields := []any{"path", c.FullPath(), "method", c.Request.Method}
+	if err != nil {
+		fields = append(fields, "error", err)
+	}
+	log.WithContext(c.Request.Context()).Warnw(msg, fields...)
+	errMsg := msg
+	if err != nil {
+		errMsg = err.Error()
+	}
+	if msg == "invalid usergroup_id" || msg == "invalid user_group_id" {
+		errMsg = msg
+	}
+	c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: errMsg})
 }
 
 func writeServiceError(c *gin.Context, err error) {
@@ -199,6 +216,12 @@ func writeServiceError(c *gin.Context, err error) {
 		errors.Is(err, service.ErrEmptyExpression):
 		c.JSON(http.StatusBadRequest, data.BaseResponse{Code: -1, ErrMsg: err.Error()})
 	default:
+		log.WithContext(c.Request.Context()).Errorw(
+			"admin api unexpected error",
+			"error", err,
+			"path", c.FullPath(),
+			"method", c.Request.Method,
+		)
 		c.JSON(http.StatusInternalServerError, data.BaseResponse{Code: -1, ErrMsg: err.Error()})
 	}
 }

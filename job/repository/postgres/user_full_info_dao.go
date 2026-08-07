@@ -71,7 +71,7 @@ func (d *UserFullInfoDaoImpl) UpsertBatch(ctx context.Context, rows []UserFullIn
 	for _, row := range rows {
 		raw, err := json.Marshal(row.Profile)
 		if err != nil {
-			log.Logger.Errorw("failed to marshal user profile", "error", err, "user_id", row.UserID)
+			log.WithContext(ctx).Errorw("failed to marshal user profile", "error", err, "user_id", row.UserID)
 			return err
 		}
 		models = append(models, UserFullInfo{
@@ -91,10 +91,10 @@ func (d *UserFullInfoDaoImpl) UpsertBatch(ctx context.Context, rows []UserFullIn
 		}),
 	}).Create(&models)
 	if ret.Error != nil {
-		log.Logger.Errorw("failed to upsert user_full_info batch", "error", ret.Error, "count", len(models))
+		log.WithContext(ctx).Errorw("failed to upsert user_full_info batch", "error", ret.Error, "count", len(models))
 		return ret.Error
 	}
-	log.Logger.Infow(
+	log.WithContext(ctx).Infow(
 		"user_full_info batch upserted",
 		"count", len(models),
 		"rows_affected", ret.RowsAffected,

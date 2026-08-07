@@ -38,7 +38,7 @@ func (d *HoldingSourceDaoImpl) ListUserIDsWithHoldings(ctx context.Context) ([]i
 		Distinct("user_id").
 		Pluck("user_id", &userIDs)
 	if ret.Error != nil {
-		log.Logger.Errorw("failed to list user_asset_holdings user ids", "error", ret.Error)
+		log.WithContext(ctx).Errorw("failed to list user_asset_holdings user ids", "error", ret.Error)
 		return nil, ret.Error
 	}
 	return userIDs, nil

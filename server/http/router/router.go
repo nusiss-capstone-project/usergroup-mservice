@@ -25,7 +25,7 @@ func NewRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(log.RecoveryMiddleware())
 	r.Use(otelgin.Middleware(data.ServiceName))
-	r.Use(log.HTTPObservabilityMiddleware())
+	r.Use(log.HTTPResponseIDMiddleware())
 	r.Use(corsMiddleware())
 
 	adminAuth := commonauth.RequireRole([]string{
@@ -34,17 +34,23 @@ func NewRouter() *gin.Engine {
 
 	basicGroup := r.Group(serviceURIPrefix)
 	{
-		basicGroup.GET("/swagger/*any", gs.WrapHandler(
-			swaggerFiles.Handler,
-			gs.URL("/usergroup-ms/v1/swagger/doc.json"),
-		))
+		// High-frequency / non-business routes: no HTTP access log.
 		basicGroup.GET("/ping", func(c *gin.Context) {
 			c.JSON(200, gin.H{
 				"message": "pong",
 			})
 		})
+		basicGroup.GET("/swagger/*any", gs.WrapHandler(
+			swaggerFiles.Handler,
+			gs.URL("/usergroup-ms/v1/swagger/doc.json"),
+		))
+	}
 
-		adminGroup := basicGroup.Group("/admin")
+	// Business routes: enable request access logging.
+	apiGroup := basicGroup.Group("")
+	apiGroup.Use(log.HTTPObservabilityMiddleware())
+	{
+		adminGroup := apiGroup.Group("/admin")
 		adminGroup.Use(adminAuth)
 		{
 			adminGroup.POST("/usergroups", api.CreateUserGroup)
@@ -67,10 +73,12 @@ func corsMiddleware() gin.HandlerFunc {
 		},
 		AllowHeaders: []string{
 			"Origin", "Content-Type", "Accept", "Authorization",
-			commonauth.HeaderInternalUserID, commonauth.HeaderUserRole, log.RequestIDHeader,
+			commonauth.HeaderInternalUserID, commonauth.HeaderUserRole,
+			log.RequestIDHeader, log.TraceIDHeader,
 		},
 		ExposeHeaders: []string{
-			"Content-Length", commonauth.HeaderInternalUserID, commonauth.HeaderUserRole, log.RequestIDHeader,
+			"Content-Length", commonauth.HeaderInternalUserID, commonauth.HeaderUserRole,
+			log.RequestIDHeader, log.TraceIDHeader,
 		},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

@@ -51,7 +51,7 @@ func (d *OrderSourceDaoImpl) ListPurchaseStatsByUserIDs(ctx context.Context, use
 		Group("user_id").
 		Find(&rows)
 	if ret.Error != nil {
-		log.Logger.Errorw("failed to list purchase stats batch", "error", ret.Error, "user_count", len(userIDs))
+		log.WithContext(ctx).Errorw("failed to list purchase stats batch", "error", ret.Error, "user_count", len(userIDs))
 		return nil, ret.Error
 	}
 	for _, row := range rows {

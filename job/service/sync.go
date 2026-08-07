@@ -47,7 +47,7 @@ func DefaultUserInfoSyncService() *UserInfoSyncService {
 }
 
 func (s *UserInfoSyncService) Sync(ctx context.Context) error {
-	log.Logger.Infow("user info sync started", "batch_size", s.batchSize)
+	log.WithContext(ctx).Infow("user info sync started", "batch_size", s.batchSize)
 
 	var (
 		afterID        int64
@@ -60,6 +60,7 @@ func (s *UserInfoSyncService) Sync(ctx context.Context) error {
 	for {
 		users, err := s.userDao.ListUsersAfterID(ctx, afterID, s.batchSize)
 		if err != nil {
+			log.WithContext(ctx).Errorw("user info sync list users failed", "error", err, "after_id", afterID)
 			return err
 		}
 		if len(users) == 0 {
@@ -74,6 +75,7 @@ func (s *UserInfoSyncService) Sync(ctx context.Context) error {
 
 		purchaseStats, err := s.orderDao.ListPurchaseStatsByUserIDs(ctx, userIDs)
 		if err != nil {
+			log.WithContext(ctx).Errorw("user info sync list purchase stats failed", "error", err, "batch", batchNo)
 			return err
 		}
 
@@ -97,14 +99,14 @@ func (s *UserInfoSyncService) Sync(ctx context.Context) error {
 
 		if err := s.fullInfoDao.UpsertBatch(ctx, upserts); err != nil {
 			totalFailed += len(upserts)
-			log.Logger.Errorw("user info sync batch failed", "batch", batchNo, "error", err, "count", len(upserts))
+			log.WithContext(ctx).Errorw("user info sync batch failed", "batch", batchNo, "error", err, "count", len(upserts))
 		} else {
 			totalSuccess += len(upserts)
 		}
 		totalProcessed += len(users)
 		afterID = users[len(users)-1].ID
 
-		log.Logger.Infow(
+		log.WithContext(ctx).Infow(
 			"user info sync batch done",
 			"batch", batchNo,
 			"after_id", afterID,
@@ -117,7 +119,7 @@ func (s *UserInfoSyncService) Sync(ctx context.Context) error {
 		}
 	}
 
-	log.Logger.Infow(
+	log.WithContext(ctx).Infow(
 		"user info sync finished",
 		"batches", batchNo,
 		"processed", totalProcessed,
