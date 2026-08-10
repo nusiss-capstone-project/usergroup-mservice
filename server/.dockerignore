@@ -1,0 +1,9 @@
+logs/
+*.log
+.git/
+.idea/
+.vscode/
+**/*_test.go
+**/mocks/
+*.md
+__debug_bin*
