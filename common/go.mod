@@ -1,6 +1,6 @@
 module github.com/nusiss-capstone-project/usergroup-mservice/common
 
-go 1.25.10
+go 1.25.12
 
 require (
 	google.golang.org/grpc v1.82.1
