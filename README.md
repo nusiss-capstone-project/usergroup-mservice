@@ -26,6 +26,6 @@ cd server && go run main.go
 
 ## 配置
 
-- Go：`1.25.10`
+- Go：`1.25.12`
 - MySQL 库名：`usergroup_ms_db`
 - Proto：`common/proto/usergroup.proto`（package `usergrouppb`）

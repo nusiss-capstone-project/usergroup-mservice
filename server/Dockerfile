@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25.10-alpine AS builder
+FROM golang:1.25.12-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates "zlib>=1.3.2-r0"
 
