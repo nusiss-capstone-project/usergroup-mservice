@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -25,7 +26,7 @@ func NewRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(log.RecoveryMiddleware())
 	r.Use(otelgin.Middleware(data.ServiceName))
-	r.Use(log.HTTPObservabilityMiddleware())
+	r.Use(log.HTTPResponseIDMiddleware())
 	r.Use(corsMiddleware())
 
 	adminAuth := commonauth.RequireRole([]string{
@@ -44,7 +45,14 @@ func NewRouter() *gin.Engine {
 			})
 		})
 
-		adminGroup := basicGroup.Group("/admin")
+		// Business routes: enable request access logging.
+		apiGroup := basicGroup.Group("")
+		apiGroup.Use(commonauth.AuditMiddleware(func(ctx context.Context) commonauth.AuditLogger {
+			return log.WithContext(ctx)
+		}))
+		apiGroup.Use(log.HTTPObservabilityMiddleware())
+
+		adminGroup := apiGroup.Group("/admin")
 		adminGroup.Use(adminAuth)
 		{
 			adminGroup.POST("/usergroups", api.CreateUserGroup)
