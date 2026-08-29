@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25.12-alpine AS builder
+FROM golang:1.25.13-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates "zlib>=1.3.2-r0"
 
@@ -9,20 +9,23 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /out/main .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -mod=readonly -trimpath -ldflags="-w -s" -o /out/main . && \
+    go clean -cache -modcache
 
 # Runtime stage
-FROM alpine:3.21
+FROM alpine:3.22
 
-RUN apk add --no-cache ca-certificates tzdata && \
+RUN apk upgrade --no-cache && \
+    apk add --no-cache ca-certificates tzdata && \
     adduser -D -h /home/appuser appuser && \
     mkdir -p /app/logs /app/resources && \
     chown -R appuser:appuser /app
 
 WORKDIR /app
 
-COPY --from=builder /out/main /app/main
-COPY --from=builder /src/resources/ /app/resources/
+COPY --from=builder --chown=appuser:appuser /out/main /app/main
+COPY --from=builder --chown=appuser:appuser /src/resources/ /app/resources/
 
 USER appuser
 

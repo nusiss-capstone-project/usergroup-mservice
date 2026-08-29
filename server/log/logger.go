@@ -24,7 +24,10 @@ var (
 	Logger = zap.NewNop().Sugar()
 )
 
-const RequestIDHeader = "X-Request-ID"
+const (
+	RequestIDHeader = "X-Request-ID"
+	TraceIDHeader   = "X-Trace-ID"
+)
 
 func InitLogger() {
 	writeSyncer := getLogWriter()
@@ -199,4 +202,17 @@ func serviceName() string {
 		return v
 	}
 	return data.ServiceName
+}
+
+func HTTPResponseIDMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requestID := requestIDFromHeader(c.GetHeader(RequestIDHeader))
+		c.Request.Header.Set(RequestIDHeader, requestID)
+		c.Header(RequestIDHeader, requestID)
+
+		if traceID, _ := traceIDs(c.Request.Context()); traceID != "" {
+			c.Header(TraceIDHeader, traceID)
+		}
+		c.Next()
+	}
 }
